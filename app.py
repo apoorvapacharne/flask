@@ -1,5 +1,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask import render_template, url_for, request, redirect
+
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:admin@localhost:5433/new"
@@ -7,8 +9,8 @@ db = SQLAlchemy(app)
 
 
 class User(db.Model):
-    id = db.Column(db.Integer, primary_key = True)
-    username = db.Column(db.String(80), unique = True)
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True)
     email = db.Column(db.String(120), unique=True)
 
     def __init__(self, username, email):
@@ -21,8 +23,15 @@ class User(db.Model):
 
 @app.route('/')
 def index():
-    return "hello World"
+    return render_template('add_user.html')
 
+
+@app.route('/post_user', methods=['POST'])
+def post_user():
+    user = User(request.form["username"], request.form["email"])
+    db.session.add(user)
+    db.session.commit()
+    return redirect(url_for('index'))
 
 if __name__ == "__main__":
     app.run(debug=True)
